@@ -4,7 +4,7 @@ using System.Reactive.Disposables;
 
 namespace MAUI.Core.Views;
 
-public class PageBase<TViewModel> : ReactiveContentPage<TViewModel>, IPageBase
+public class PageBase<TViewModel> : ReactiveContentPage<TViewModel>, IPageBase, IAnimatedPage
     where TViewModel : class, IViewModelBase
 {
     public PageBase(TViewModel vm)
@@ -33,5 +33,15 @@ public class PageBase<TViewModel> : ReactiveContentPage<TViewModel>, IPageBase
     {
         ViewModel.OnDisappearing();
         base.OnDisappearing();
+    }
+
+    public Task RunDisappearingAnimationAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task RunAppearingAnimationAsync()
+    {
+        return Task.CompletedTask;
     }
 }

@@ -1,20 +1,38 @@
-﻿using System.Reactive.Disposables;
+﻿
+using ReactiveUI;
+using System.Reactive.Disposables;
 
 namespace MAUI.Core.ViewModels;
-public class ViewModelBase : IViewModelBase
+public class ViewModelBase : ReactiveObject, IViewModelBase, IQueryAttributable
 {
+    public ViewModelBase()
+    {
+    }
+
+    private CompositeDisposable _disposables;
     public bool IsLoading { get; set; }
 
-    protected CompositeDisposable Disposables { get; set; }
+    protected virtual void RegisterCommands(CompositeDisposable disposables)
+    { }
+
+    protected virtual void RegisterProperties(CompositeDisposable disposables)
+    { }
 
     public virtual void OnAppearing()
     {
-        Disposables ??= new CompositeDisposable();
+        _disposables ??= new CompositeDisposable();
+
+        RegisterProperties(_disposables);
+        RegisterCommands(_disposables);
     }
 
     public virtual void OnDisappearing()
     {
-        Disposables.Dispose();
-        Disposables = null;
+        _disposables.Dispose();
+        _disposables = null;
+    }
+
+    public virtual void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
     }
 }

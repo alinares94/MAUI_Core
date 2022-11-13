@@ -6,6 +6,11 @@ internal class DialogService : IDialogService
         await Application.Current.MainPage.DisplayAlert(title, message, close);
     }
 
+    public async Task ShowErrorAsync(Exception exception)
+    {
+        await ShowDialogAsync("Error", exception.Message, "Cerrar");
+    }
+
     public async Task<bool> ShowDialogConfirmationAsync(string title, string message, string cancel, string ok)
     {
         return await Application.Current.MainPage.DisplayAlert(title, message, ok, cancel);

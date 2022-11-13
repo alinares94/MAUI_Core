@@ -13,11 +13,11 @@ internal class WebService : IWebService
     public WebService(HttpClient httpClient, WebServiceSettings settings)
     {
         _httpClient = httpClient;
-        AddHeaders(_settings.Headers);
         _settings = settings ?? new WebServiceSettings();
+        AddHeaders(_settings.Headers);
     }
 
-    public async Task<TResponse> GetAsync<TResponse>(string url, IDictionary<string, string> headers = null)
+    public async Task<TResponse> GetAsync<TResponse>(string url, IDictionary<string, string> headers = null, string baseUrl = null)
         where TResponse : class
     {
         var fullUrl = BeforeRequest(url, headers);
@@ -25,7 +25,7 @@ internal class WebService : IWebService
         return await AfterRequest<TResponse>(headers, response);
     }
 
-    public async Task<TResponse> DeleteAsync<TResponse>(string url, IDictionary<string, string> headers = null)
+    public async Task<TResponse> DeleteAsync<TResponse>(string url, IDictionary<string, string> headers = null, string baseUrl = null)
     where TResponse : class
     {
         var fullUrl = BeforeRequest(url, headers);
@@ -33,7 +33,7 @@ internal class WebService : IWebService
         return await AfterRequest<TResponse>(headers, response);
     }
 
-    public async Task<TResponse> PostAsync<TResponse, TBody>(string url, TBody body, IDictionary<string, string> headers = null)
+    public async Task<TResponse> PostAsync<TResponse, TBody>(string url, TBody body, IDictionary<string, string> headers = null, string baseUrl = null)
         where TResponse : class
     {
         var fullUrl = BeforeRequest(url, headers);
@@ -42,7 +42,7 @@ internal class WebService : IWebService
         return await AfterRequest<TResponse>(headers, response);
     }
 
-    public async Task<TResponse> PutAsync<TResponse, TBody>(string url, TBody body, IDictionary<string, string> headers = null)
+    public async Task<TResponse> PutAsync<TResponse, TBody>(string url, TBody body, IDictionary<string, string> headers = null, string baseUrl = null)
         where TResponse : class
     {
         var fullUrl = BeforeRequest(url, headers);
@@ -59,10 +59,11 @@ internal class WebService : IWebService
         return DeserializeResponse<TResponse>(responseBody);
     }
 
-    private string BeforeRequest(string url, IDictionary<string, string> headers)
+    private string BeforeRequest(string url, IDictionary<string, string> headers, string baseUrl = null)
     {
         AddHeaders(headers);
-        return _settings.BaseUrl + url;
+        var prefix = string.IsNullOrEmpty(baseUrl) ? baseUrl : _settings.BaseUrl;
+        return prefix + url;
     }
 
     private static StringContent BeforeBodyRequest<TBody>(TBody body, IDictionary<string, string> headers)
@@ -100,13 +101,5 @@ internal class WebService : IWebService
     {
         if (headers != null && headers.Any())
             headers.ForEach(x => _httpClient.DefaultRequestHeaders.Remove(x));
-    }
-
-    internal static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-    {
-        return HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
-            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
 }

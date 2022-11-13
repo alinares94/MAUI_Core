@@ -1,48 +1,56 @@
-﻿using MoreLinq;
-using SQLite;
+﻿using SQLite;
+using System.Runtime.CompilerServices;
 
 namespace MAUI.Core.Services.Sqlite;
+public class AsyncLazy<T>
+{
+    readonly Lazy<Task<T>> instance;
+
+    public AsyncLazy(Func<T> factory)
+    {
+        instance = new Lazy<Task<T>>(() => Task.Run(factory));
+    }
+
+    public AsyncLazy(Func<Task<T>> factory)
+    {
+        instance = new Lazy<Task<T>>(() => Task.Run(factory));
+    }
+
+    public TaskAwaiter<T> GetAwaiter()
+    {
+        return instance.Value.GetAwaiter();
+    }
+}
 public class SqliteService : ISqliteService
 {
     private readonly AsyncLock _mutex = new();
-    private readonly SqliteSettings _settings;
-
 
     public SqliteService(SqliteSettings settings)
     {
-        _settings = settings;
-        _ = InitDatabase();
+        _ = InitDatabase(settings);
     }
 
-    protected SQLiteAsyncConnection SqlConnection { get; private set; }
+    private static SQLiteAsyncConnection _sqlConnection;
 
-    private Task InitDatabase()
+    public static Task InitDatabase(SqliteSettings settings)
     {
-        if (string.IsNullOrEmpty(_settings.DatabaseFilename))
+        if (string.IsNullOrEmpty(settings?.DatabaseFilename) || settings.Types == null)
             throw new NotImplementedException("You shoud implement CoreSettings");
 
         var directory = FileSystem.AppDataDirectory;
         if (!Directory.Exists(directory))
             Directory.CreateDirectory(directory);
-        var databasePath = Path.Combine(directory, _settings.DatabaseFilename);
-        SqlConnection = new SQLiteAsyncConnection(databasePath);
-        return InitDatabaseTables();
-    }
+        var databasePath = Path.Combine(directory, settings.DatabaseFilename);
+        _sqlConnection = new SQLiteAsyncConnection(databasePath);
 
-    public async Task InitDatabaseTables()
-    {
-        if (_settings?.Types == null)
-            return;
-
-        foreach (var type in _settings.Types)
-            await SqlConnection.CreateTableAsync(type);
+        return _sqlConnection.CreateTablesAsync(CreateFlags.None, settings.Types.ToArray());
     }
 
     public async Task<bool> Delete<T>(T entity) where T : ModelWithId, new()
     {
         using (await _mutex.LockAsync().ConfigureAwait(false))
         {
-            return await SqlConnection.DeleteAsync(entity) > 0;
+            return await _sqlConnection.DeleteAsync(entity) > 0;
         }
     }
 
@@ -50,7 +58,7 @@ public class SqliteService : ISqliteService
     {
         using (await _mutex.LockAsync().ConfigureAwait(false))
         {
-            return await SqlConnection.Table<T>().ToListAsync();
+            return await _sqlConnection.Table<T>().ToListAsync();
         }
     }
 
@@ -58,7 +66,7 @@ public class SqliteService : ISqliteService
     {
         using (await _mutex.LockAsync().ConfigureAwait(false))
         {
-            return await SqlConnection.GetAsync<T>(id);
+            return await _sqlConnection.GetAsync<T>(id);
         }
     }
 
@@ -68,12 +76,12 @@ public class SqliteService : ISqliteService
         {
             if (entity.Id != 0)
             {
-                await SqlConnection.UpdateAsync(entity).ConfigureAwait(false);
+                await _sqlConnection.UpdateAsync(entity).ConfigureAwait(false);
                 return entity;
             }
             else
             {
-                await SqlConnection.InsertAsync(entity).ConfigureAwait(false);
+                await _sqlConnection.InsertAsync(entity).ConfigureAwait(false);
                 return entity;
             }
         }
