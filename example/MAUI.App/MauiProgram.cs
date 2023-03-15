@@ -1,5 +1,4 @@
-﻿using MAUI.App.Views;
-using MAUI.Core.Settings;
+﻿using MAUI.Core.Settings;
 
 namespace MAUI.App;
 

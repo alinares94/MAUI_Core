@@ -1,9 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using MAUI.App.Views;
-using MAUI.Core.Services.Navigation;
-
-namespace MAUI.App.ViewModels;
-public class NewViewModel1 : ViewModelBase
+﻿namespace MAUI.App.ViewModels;
+public partial class NewViewModel1 : ViewModelBase
 {
     private readonly INavigationService _navigationService;
 
@@ -14,23 +10,9 @@ public class NewViewModel1 : ViewModelBase
 
     #region Commands
 
-    public IAsyncRelayCommand GoToView2Command { get; set; }
 
-    protected override void RegisterCommands()
-    {
-        base.RegisterCommands();
-
-        GoToView2Command = new AsyncRelayCommand(GoToView2);
-    }
-
-    #endregion
-
-    #region Methods
-
-    private async Task GoToView2()
-    {
-        await _navigationService.NavigateTo<NewView2>();
-    }
+    [RelayCommand]
+    private Task GoToView2() => _navigationService.NavigateTo<NewView2>();
 
     #endregion
 }

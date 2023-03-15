@@ -1,6 +1,11 @@
 ﻿global using CommunityToolkit.Maui;
-global using MAUI.App.ViewModels;
+global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.Input;
 global using Maui.Core;
+global using MAUI.App.ViewModels;
+global using MAUI.App.Views;
 global using MAUI.Core.Services.Dialog;
+global using MAUI.Core.Services.Navigation;
 global using MAUI.Core.ViewModels;
 global using MAUI.Core.Views;
+global using System.ComponentModel.DataAnnotations;

@@ -1,8 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using System.Windows.Input;
-
-namespace MAUI.App.ViewModels;
-public class MainViewModel : ViewModelBase
+﻿namespace MAUI.App.ViewModels;
+public partial class MainViewModel : FormViewModelBase
 {
     public MainViewModel(IDialogService dialogService) : base(dialogService)
     {
@@ -10,43 +7,17 @@ public class MainViewModel : ViewModelBase
 
     #region Fields
 
+    [ObservableProperty]
     private string _user;
+
+    [ObservableProperty]
     private string _pwd;
-
-    #endregion
-
-    #region Properties
-
-    public string User
-    {
-        get => _user;
-        set => SetField(ref _user, value);
-    }
-
-    public string Pwd
-    {
-        get => _pwd;
-        set => SetField(ref _pwd, value);
-    }
 
     #endregion
 
     #region Commands
 
-    public ICommand SubmitCommand { get; set; }
-
-    protected override void RegisterCommands()
-    {
-        base.RegisterCommands();
-
-        SubmitCommand = new AsyncRelayCommand(Submit);
-    }
-
-    #endregion
-
-    #region Methods
-
-    private async Task Submit()
+    protected override async Task Submission()
     {
         DialogService.ShowBusy();
         await Task.Delay(3000);

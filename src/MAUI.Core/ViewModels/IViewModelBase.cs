@@ -1,7 +1,5 @@
-﻿using System.ComponentModel;
-
-namespace MAUI.Core.ViewModels;
-public interface IViewModelBase : INotifyPropertyChanged
+﻿namespace MAUI.Core.ViewModels;
+public interface IViewModelBase
 {
     Task PageLoadedAsync(IEnumerable<NavigationParam> @params);
     void OnAppearing();

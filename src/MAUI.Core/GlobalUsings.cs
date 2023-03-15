@@ -1,4 +1,5 @@
-﻿global using MAUI.Core.Services.Dialog;
+﻿global using CommunityToolkit.Mvvm.ComponentModel;
+global using MAUI.Core.Services.Dialog;
 global using MAUI.Core.Services.Navigation;
 global using MAUI.Core.Services.Sqlite;
 global using MAUI.Core.Services.Web;
